@@ -24,7 +24,5 @@ public class ActivityResponseWithCounts {
         this.completedCount = completedCount;
         this.pendingCount = pendingCount;
         this.notApplicableCount = notApplicableCount;
-
-
     }
 }
