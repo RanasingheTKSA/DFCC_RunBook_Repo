@@ -20,6 +20,8 @@ import {
 import "../css/AdminPanel.css";
 import { useState, useEffect } from 'react';
 import { fetchActivityCounts } from '../features/activity/adminPanelApis';
+import { createActivity, updateActivity } from '../features/activity/adminPanelApis';
+import { getAllActivities } from '../features/activity/adminPanelApis';
 
 export default function AdminPanel({ title, children, topMargin, TopSideButtons }) {
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -29,6 +31,29 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
     const [activityCounts, setActivityCounts] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Admin Panel - Activity Controller page API's
+    const [showActivityForm, setShowActivityForm] = useState(false);
+    const [currentActivity, setCurrentActivity] = useState(null);
+    const [activityForm, setActivityForm] = useState({
+        name: '',
+        scheduleTime: '',
+        shift: 'Morning-Weekday-Normal',
+        activityOrder: 1,
+        description: '',
+        isActive: true,
+        date: new Date()
+    });
+
+    // Filter activities based on selected shift
+    const filteredActivities = activityCounts?.activities?.filter(activity =>
+        activity.shift === shiftFilter
+    ) || [];
+
+
+
+
+
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
@@ -60,7 +85,7 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
             }
         };
 
-        if (activeTab === 'Admin Home') {
+        if (activeTab === 'Admin Home' || activeTab === 'Activity Controller') {
             fetchData();
         }
     }, [dateFilter, shiftFilter, activeTab]);
@@ -178,7 +203,7 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
                 ? `${getPendingActivities().length} pending activity${getPendingActivities().length > 1 ? 'ies' : ''}`
                 : "No pending activities",
             spanColumns: true,
-            
+
         },
         {
             title: "Special Notice",
@@ -187,7 +212,7 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
             change: getActivitiesWithComments().length > 0
                 ? `${getActivitiesWithComments().length} notice${getActivitiesWithComments().length > 1 ? 's' : ''} with comments`
                 : "No special notices",
-            spanColumns: true 
+            spanColumns: true
         },
     ];
 
@@ -199,6 +224,7 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
         { value: 'Morning-Weekday-Holiday', label: 'WeekEnd/Holiday - Morning' },
         { value: 'Night-Weekday-Holiday', label: 'WeekEnd/Holiday - Night' }
     ];
+
 
     return (
         <div className="container-Home" style={{ backgroundImage: `url(${backHH})`, backgroundPosition: 'center', backgroundSize: 'cover' }}>
@@ -257,6 +283,7 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
                         <div className="content-area" style={{ marginTop: topMargin || '20px' }}>
                             {children || (
                                 <div className="default-content">
+                                    {/* Admin Home */}
                                     {activeTab === 'Admin Home' && (
                                         <>
                                             <h3>Welcome to the Admin Panel</h3>
@@ -301,10 +328,9 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
                                                 ) : (
                                                     dashboardStats.map((stat, index) => (
                                                         <div
-                                                            className={`stat-card ${
-                                                                stat.title === "Special Notice" ? "special-notice" : 
+                                                            className={`stat-card ${stat.title === "Special Notice" ? "special-notice" :
                                                                 stat.title === "Pending Activities" ? "pending-activities" : ""
-                                                            }`}
+                                                                }`}
                                                             style={stat.spanColumns ? { gridColumn: 'span 2' } : {}}
                                                             key={index}
                                                         >
@@ -324,7 +350,121 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
 
                                         </>
                                     )}
-                                    {activeTab !== 'Admin Home' && (
+
+                                    {/* Activity Controller */}
+                                    {activeTab === 'Activity Controller' && (
+                                        <>
+                                            <h3>Activity Controller</h3>
+
+                                            {/* Date and Shift Filters */}
+                                            <div className="dashboard-filters">
+
+                                                <div className="filter-group">
+                                                    <FaClock className="filter-icon" />
+                                                    <select
+                                                        value={shiftFilter}
+                                                        onChange={handleShiftChange}
+                                                        className="shift-filter"
+                                                    >
+                                                        {shiftOptions.map((option, index) => (
+                                                            <option key={index} value={option.value}>
+                                                                {option.label}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            {/* Activity List and Management */}
+                                            <div className="activity-management">
+                                                {/* Activity List Table */}
+                                                <div className="activity-table-container">
+                                                    <table className="activity-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Order</th>
+                                                                <th>Activity Name</th>
+                                                                <th>Scheduled Time</th>
+                                                                <th>Status</th>
+                                                                <th>Actions</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {loading ? (
+                                                                <tr>
+                                                                    <td colSpan={5} className="loading-indicator">
+                                                                        Loading activities...
+                                                                    </td>
+                                                                </tr>
+                                                            ) : filteredActivities?.length > 0 ? (
+                                                                filteredActivities.map((activity) => (
+                                                                    <tr key={activity.id}>
+                                                                        <td>{activity.activityOrder}</td>
+                                                                        <td>{activity.name}</td>
+                                                                        <td>{activity.scheduleTime}</td>
+                                                                        <td>
+                                                                            <span className={`status-badge ${activity.isActive ? 'inactive' : 'active'}`}>
+                                                                                {activity.isActive ? 'Active' : 'Inactive'}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td className="action-buttons">
+                                                                            <button
+                                                                                className="edit-btn"
+                                                                        
+                                                                            >
+                                                                                Edit
+                                                                            </button>
+                                                                            <button
+                                                                                className={`toggle-btn ${activity.isActive ? 'deactivate' : 'activate'}`}
+                                                                                onClick={async () => {
+                                                                                    try {
+                                                                                        setLoading(true);
+                                                                                        await updateActivity(activity.id, {
+                                                                                            isActive: !activity.isActive,
+                                                                                            name: '',
+                                                                                            scheduleTime: '',
+                                                                                            time: '',
+                                                                                            shift: '',
+                                                                                            activityOrder: 0
+                                                                                        });
+                                                                                        
+                                                                                        const data = await fetchActivityCounts({
+                                                                                            date: new Date(dateFilter),
+                                                                                            shift: shiftFilter
+                                                                                        });
+                                                                                        setActivityCounts(data);
+                                                                                    } catch (err) {
+                                                                                        setError('Failed to update activity status');
+                                                                                        console.error(err);
+                                                                                    } finally {
+                                                                                        setLoading(false);
+                                                                                    }
+                                                                                }}
+                                                                            >
+                                                                                {activity.isActive ? 'Deactivate' : 'Activate'}
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))
+                                                            ) : (
+                                                                <tr>
+                                                                    <td colSpan={5} className="no-activities">
+                                                                        No activities found for selected date and shift
+                                                                    </td>
+                                                                </tr>
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+
+                                                
+                                            </div>
+                                        </>
+                                    )}
+
+
+                                    {/* rest of the other tabs */}
+                                    {activeTab !== 'Admin Home' && activeTab !== 'Activity Controller' && (
                                         <p>Select a section from the sidebar to begin.</p>
                                     )}
                                 </div>
