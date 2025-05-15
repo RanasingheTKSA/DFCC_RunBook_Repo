@@ -589,4 +589,36 @@ public class ActivityService {
                 })).toList();
     }
 
+
+
+    // Admin Panel - Activity Controller
+    public Activities getActivityById(String id) {
+        return  activityRepo.findById(id).orElseThrow(() -> new RuntimeException("Activity not found with id: " + id));
+    }
+
+    public Activities updateActivity(String id, Activities activity) {
+        Activities existingActivities = getActivityById(id);
+
+        existingActivities.setName(activity.getName());
+        existingActivities.setDescription(activity.getDescription());
+        existingActivities.setShift(activity.getShift());
+        existingActivities.setActivityOrder(activity.getActivityOrder());
+        existingActivities.setTime(activity.getTime());
+
+        return activityRepo.save(existingActivities);
+    }
+
+    public Activities softDeleteActivity(String id) {
+        Activities activity = getActivityById(id);
+        activity.setIsActive(0);
+        return  activityRepo.save(activity);
+    }
+
+    public List<Activities> getAllActivities() {
+        return activityRepo.findAll();
+    }
+
+//    public List<Activities> getActiveActivities() {
+//        return activityRepo.findBy
+//    }
 }

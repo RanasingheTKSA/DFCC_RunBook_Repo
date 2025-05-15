@@ -79,4 +79,37 @@ public class ActivityController {
         return ResponseEntity.ok(activityService.getAllByDateAndShiftWithCounts(date, shift));
     }
 
+
+    // Admin Panel - Activity Controller
+    // Get activity by ID
+    @GetMapping(path = "/{id}")
+    public ResponseEntity<Activities> getActivityById(@PathVariable String id) {
+        return ResponseEntity.ok(activityService.getActivityById(id));
+    }
+
+    // Update activity
+    @PutMapping(path = "/update/{id}")
+    public ResponseEntity<Activities> updateActivity(
+            @PathVariable String id,
+            @RequestBody Activities activity) {
+        return ResponseEntity.ok(activityService.updateActivity(id, activity));
+    }
+
+    // Soft delete activity (set status to 0)
+    @PutMapping(path = "/delete/{id}")
+    public ResponseEntity<Activities> deleteActivity(@PathVariable String id) {
+        return ResponseEntity.ok(activityService.softDeleteActivity(id));
+    }
+
+    // Get all activities (including inactive ones)
+    @GetMapping(path = "/all")
+    public ResponseEntity<List<Activities>> getAllActivities() {
+        return ResponseEntity.ok(activityService.getAllActivities());
+    }
+
+    // Get only active activities (status = 1)
+//    @GetMapping(path = "/active")
+//    public ResponseEntity<List<Activities>> getActiveActivities() {
+//        return ResponseEntity.ok(activityService.getActiveActivities());
+//    }
 }
