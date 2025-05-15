@@ -1,0 +1,49 @@
+.DateAnalytics {
+    position: absolute;
+    top: 12%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center; /* Optional for centering text within the container */
+    font-size: 14px;
+}
+
+.containerr {
+    width: 100%;
+    margin-top: 100px;
+    padding-bottom: 20px;
+    height: 600px; /* Set a fixed height for the container */
+    overflow-y: auto; /* Enable vertical scrolling if content overflows */
+}
+
+canvas {
+    width: 80%;
+    margin-top: 10px;
+    margin-left: 16%;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgb(9, 8, 8);
+    background-color: rgba(246, 242, 242, 0.48);
+    padding: 10px;
+    font-size: 50px;
+}
+
+.select-date {
+    /* Overall styling */
+    align-items: center;
+    font-family: 'Poppins', sans-serif; /* Consider a modern sans-serif font like Poppins */
+    font-size: 16px; /* Optimal readability */
+    font-weight: 800; /* Slightly bold for emphasis */
+    color: #090808; /* Dark gray text for visual contrast */
+    cursor: pointer; /* Indicate interactivity */
+}
+.spinner1{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.6);
+    
+  }

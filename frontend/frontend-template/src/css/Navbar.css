@@ -1,0 +1,85 @@
+.Navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background: #FFF; /* Changed to a white background for a cleaner look */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: 'Roboto Condensed';
+    height: 60px; /* Adjusted for better vertical alignment */
+    position: fixed;
+    top: 0;
+    width: 100%;
+    font-size: small;
+    z-index: 10; /* Ensure the navbar stays on top of other content */
+}
+
+.NavbarUser{
+    width: 45%;
+}
+
+.Navbar nav {
+    display: flex;
+    gap: 20px; /* This creates consistent spacing between navigation items */
+}
+
+.Navbar nav a, .Navbar nav button {
+    padding: 5px 10px;
+    border-radius: 5px; /* Rounded corners for a softer look */
+    transition: background-color 0.3s, color 0.3s;
+    text-decoration: none; /* Removes underline from links */
+    color: #4A4A4A; /* Darker text for better readability */
+    font-weight: 500;
+}
+
+.Navbar nav a:hover, .Navbar nav button:hover {
+    background-color: #f2f2f2; /* Subtle hover effect */
+}
+
+.Navbar nav a:active, .Navbar nav button:active {
+    background-color: #e6e6e6; /* Subtle active effect */
+}
+
+.Navbar nav .active {
+    border-bottom: 2px solid #d62424; /* Maintains the red color for active links */
+}
+
+.logo_c {
+    width: auto;
+    height: 40px; /* Adjusted for a better fit within the navbar */
+}
+
+/* Improved button styling */
+.Navbar nav button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Roboto Condensed';
+    font-size: inherit;
+}
+
+/* Responsive design adjustments */
+@media (max-width: 558px) {
+    .Navbar {
+        flex-direction: column;
+        padding: 10px;
+        height: auto;
+    }
+
+    .Navbar nav {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .Navbar nav a, .Navbar nav button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .logo_c {
+        margin: 0 auto; /* Center logo */
+    }
+}
+.logo_c{
+    margin-right: 40px;
+}

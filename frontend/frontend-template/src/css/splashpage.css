@@ -1,0 +1,54 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.logo {
+    font-size: 2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.slogan {
+    font-size: 1.5em;
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+.wifi-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.name-input,
+.email-input {
+    font-size: 1em;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.submit-button {
+    font-size: 1em;
+    color: white;
+    background-color: #4CAF50;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background-color: #45a049;
+}
+
+/* Add responsive styling as needed */
+@media (min-width: 768px) {
+    .wifi-form {
+        width: 50%;
+    }
+}
