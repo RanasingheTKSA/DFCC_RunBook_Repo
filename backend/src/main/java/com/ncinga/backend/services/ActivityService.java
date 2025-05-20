@@ -610,7 +610,7 @@ public class ActivityService {
 
     public Activities softDeleteActivity(String id) {
         Activities activity = getActivityById(id);
-        activity.setIsActive(0);
+        activity.setIsActive("false");
         return  activityRepo.save(activity);
     }
 
