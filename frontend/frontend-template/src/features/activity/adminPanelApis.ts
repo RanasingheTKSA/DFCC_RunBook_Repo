@@ -76,14 +76,15 @@ export const fetchActivityCounts = async (details: DateAndShift): Promise<Activi
 // NEW METHODS FOR ACTIVITY MANAGEMENT
 
 export interface ActivityData {
-    id?: string;
+    success: any;
+    id: string;
     name: string;
     scheduleTime: string;
     time: string;
     shift: string;
     activityOrder: number;
     description?: string;
-    isActive?: boolean;
+    isActive: string;
     records?: any[];
 }
 
@@ -127,7 +128,7 @@ export const deleteActivity = async (id: string): Promise<ActivityData> => {
     }
 };
 
-export const getAllActivities = async (): Promise<ActivityData[]> => {
+export const getAllActivities = async (shiftFilter: string): Promise<ActivityData[]> => {
     try {
         const response = await axios.get(`http://${HOST}:${PORT}/activities/all`);
         return response.data;
@@ -136,11 +137,6 @@ export const getAllActivities = async (): Promise<ActivityData[]> => {
         throw error;
     }
 };
-
-// export const getAllActivities = async (shift) => {
-//   const response = await axios.get(`http://${HOST}:${PORT}/activities/getallwithcountsbydateandshift/${shift}`);
-//   return response.data;
-// };
 
 // Utility function for error handling
 const handleError = (error: any) => {
