@@ -441,12 +441,12 @@ public class ActivityService {
             // Only send midnight overdue messages between 12:00 AM and 6:59 AM
             if (!overdueActivityNames.isEmpty()) {
                 System.out.println("Sending night WhatsApp message!");
-                //whatsAppService.sendMidnightOverdueRecordsMessage(overdueActivityNames);
+                whatsAppService.sendMidnightOverdueRecordsMessage(overdueActivityNames);
             }
         } else {
             // Outside of midnight window, send unconfirmed messages
             if (!overdueUnconfirmedNames.isEmpty()) {
-                //whatsAppService.sendUnconfirmedActivitiesMessage(new ArrayList<>(overdueUnconfirmedNames));
+                whatsAppService.sendUnconfirmedActivitiesMessage(new ArrayList<>(overdueUnconfirmedNames));
             }
         }
 
