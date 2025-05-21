@@ -467,7 +467,7 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
                                                                 </tr>
                                                             ) : filteredActivities?.length > 0 ? (
                                                                 filteredActivities
-                                                                .filter(activity => activity.isActive !== true && activity.isActive !== 'true')
+                                                                
                                                                 .map((activity) => (
                                                                     <tr key={activity.id}>
                                                                         <td>{activity.activityId}</td>
