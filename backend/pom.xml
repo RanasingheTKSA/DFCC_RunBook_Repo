@@ -25,7 +25,7 @@
             <url>https://jitpack.io</url>
         </repository>
     </repositories>
-
+    <packaging>war</packaging>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

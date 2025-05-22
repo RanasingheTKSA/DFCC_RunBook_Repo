@@ -523,15 +523,15 @@ public class ActivityService {
         List<ActivityResponse> responses = getActivityResponses(date, shift);
 
         // Filter out active activities (where isActive is true)
-        List<ActivityResponse> filteredResponses = responses.stream()
-                .filter(activityResponse ->
-                        activityResponse.getIsActive() != null &&
-                        activityResponse.getIsActive().equalsIgnoreCase("true"))
-                .collect(Collectors.toList());
-        System.out.println("FILTERD RECORD : " + filteredResponses);
+//        List<ActivityResponse> filteredResponses = responses.stream()
+//                .filter(activityResponse ->
+//                        activityResponse.getIsActive() != null &&
+//                        activityResponse.getIsActive().equalsIgnoreCase("true"))
+//                .collect(Collectors.toList());
+//        System.out.println("FILTERD RECORD : " + filteredResponses);
 
-        int totalCount = filteredResponses.size();
-        int completedCount = (int) filteredResponses.stream()
+        int totalCount = responses.size();
+        int completedCount = (int) responses.stream()
                 .filter(ar -> "completed".equalsIgnoreCase(ar.getStatus()))
                 .count();
         int pendingCount = (int) responses.stream()
