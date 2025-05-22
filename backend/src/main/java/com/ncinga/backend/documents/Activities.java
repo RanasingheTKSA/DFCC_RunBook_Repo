@@ -21,6 +21,7 @@ public class Activities {
     private String shift; //Morning,Mid,Night
     private int activityOrder;
     private String description;
+    private String isActive;
 
     @DBRef
     private List<Records> records;

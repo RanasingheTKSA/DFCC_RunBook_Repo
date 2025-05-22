@@ -27,7 +27,7 @@ const router = createBrowserRouter(
         <Route index element={<Home />} />
         <Route path="sheet" element={<Sheet />} />
         <Route path="analytics" element={<Analytics />} />
-        <Route path="adminpanel" element={<AdminPanel />} />
+        <Route path="adminpanel" element={<AdminPanel title={undefined} children={undefined} topMargin={undefined} TopSideButtons={undefined} />} />
 
       </Route>
     </>,
