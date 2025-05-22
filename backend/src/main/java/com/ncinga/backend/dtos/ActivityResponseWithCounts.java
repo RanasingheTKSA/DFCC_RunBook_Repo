@@ -13,6 +13,7 @@ public class ActivityResponseWithCounts {
     private int completedCount;
     private int pendingCount;
     private int notApplicableCount;
+    private String isActive;
 
     public ActivityResponseWithCounts(List<ActivityResponse> activities,
                                       int totalCount,
@@ -24,7 +25,5 @@ public class ActivityResponseWithCounts {
         this.completedCount = completedCount;
         this.pendingCount = pendingCount;
         this.notApplicableCount = notApplicableCount;
-
-
     }
 }

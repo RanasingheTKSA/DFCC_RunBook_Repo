@@ -23,4 +23,5 @@ public class ActivityRequest {
     private String completedTime;
     private Date date;
     private String comment;
+    private String isActive;
 }
