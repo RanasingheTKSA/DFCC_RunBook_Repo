@@ -598,7 +598,6 @@ public class ActivityService {
     }
 
 
-
     // Admin Panel - Activity Controller
     public Activities getActivityById(String id) {
         return  activityRepo.findById(id).orElseThrow(() -> new RuntimeException("Activity not found with id: " + id));
