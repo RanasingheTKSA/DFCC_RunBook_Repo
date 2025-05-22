@@ -13,17 +13,20 @@ public class ActivityResponseWithCounts {
     private int completedCount;
     private int pendingCount;
     private int notApplicableCount;
-    private String isActive;
+    private int isActiveCount;
 
     public ActivityResponseWithCounts(List<ActivityResponse> activities,
                                       int totalCount,
                                       int completedCount,
                                       int pendingCount,
-                                      int notApplicableCount) {
+                                      int notApplicableCount,
+                                      int isActiveCount) {
         this.activities = activities;
         this.totalCount = totalCount;
         this.completedCount = completedCount;
         this.pendingCount = pendingCount;
         this.notApplicableCount = notApplicableCount;
+        this.isActiveCount = isActiveCount;
+
     }
 }
