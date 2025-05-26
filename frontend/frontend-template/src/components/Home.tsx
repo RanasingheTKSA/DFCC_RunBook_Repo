@@ -31,6 +31,7 @@ export interface RowData {
   user: string;
   scheduleTime: string;
   isOverdue?: boolean;
+  isActive: string;
 }
 
 export default function Home() {
@@ -76,6 +77,8 @@ export default function Home() {
 
   const handleSelectChange = (index: number, value: string) => {
     const updatedData = [...data];
+    console.log("updatedData", updatedData);
+    
     const activity = updatedData[index];
     if (value === 'Completed' || value === 'Not Applicable') {
       setOpenDialog(true);
@@ -243,7 +246,6 @@ export default function Home() {
           <thead>
             <tr>
               <th>Activity</th>
-              {/* <th>Schedule Time</th> */}
               <th>Cut-off Time</th>
               <th>Completed Date</th>
               <th>Completed User</th>
@@ -258,7 +260,9 @@ export default function Home() {
 
 
           <tbody>
-            {data.map((row, index) => {
+            {data
+              .filter((row) => row.isActive === 'true') 
+              .map((row, index) => {
 
               // this is the working one 
               // const scheduleTimeDB = row.scheduleTime || "00.00";
@@ -325,6 +329,7 @@ export default function Home() {
               const scheduleConvertedTime = new Date();
               scheduleConvertedTime.setHours(hours, minutes, 0, 0);
               const currentTime = new Date();
+              const isActive = row.isActive === 'true';
 
               const parseDateTime = (dateTimeStr) => {
                 if (!dateTimeStr) return null;
@@ -352,13 +357,9 @@ export default function Home() {
 
               const confirmationConvertedTime = parseDateTime(row.confirmTime);
               const completionConvertedTime = parseDateTime(row.completedTime);
-              const isPendingAndOverdue = scheduleConvertedTime < currentTime &&
-                row.status === 'Pending' &&
-                !row.confirmation;
-              const isLateConfirmation = confirmationConvertedTime &&
-                scheduleConvertedTime < confirmationConvertedTime;
-              const isLateCompletion = completionConvertedTime &&
-                scheduleConvertedTime < completionConvertedTime;
+              const isPendingAndOverdue = scheduleConvertedTime < currentTime && row.status === 'Pending' && !row.confirmation;
+              const isLateConfirmation = confirmationConvertedTime && scheduleConvertedTime < confirmationConvertedTime;
+              const isLateCompletion = completionConvertedTime && scheduleConvertedTime < completionConvertedTime;
               const isOverdue = isPendingAndOverdue || isLateConfirmation || isLateCompletion;
 
               let tooltipMessage = "";
@@ -396,27 +397,6 @@ export default function Home() {
                       </select>}
                   </td>
 
-                  {/* version one */}
-                  {/* <td>
-                  {row.status === "Completed" ? (
-                    <span className="green-text">{row.status}</span>
-                  ) : row.status === "Not Applicable" ? (
-                    <span className="yellow-text">{row.status}</span>
-                  ) : (
-                    <select
-                      className="select"
-                      value={row.status}
-                      onChange={(e) => handleSelectChange(index, e.target.value)}
-                    >
-                      {dropdownOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </td> */}
-
                   {/* original one */}
                   <td>
                     {row.confirmation ? <span className="confirmed-text">CONFIRMED</span> :
@@ -428,21 +408,6 @@ export default function Home() {
                       </button>
                     }
                   </td>
-
-                  {/* version one */}
-                  {/* <td>
-                  {row.confirmation ? (
-                    <span className="confirmed-text">CONFIRMED</span>
-                  ) : (
-                    <button
-                      className={`buttonT ${row.confirmation ? 'confirmed' : ''}`}
-                      onClick={() => handleConfirmationChange(index)}
-                    >
-                      {row.confirmation ? 'Confirmed' : 'Confirm'}
-                    </button>
-                  )}
-                </td> */}
-
 
                   <td>
                     <input
