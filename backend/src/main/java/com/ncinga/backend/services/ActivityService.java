@@ -114,6 +114,7 @@ public class ActivityService {
                     response.setConfirmUser(record.getConfirmUser());
                     response.setConfirmation(record.isConfirmation());
                     response.setStatus(record.getStatus());
+                    response.setIsActive(activity.getIsActive());
                     if(record.getCompletedTime() != null){
                         response.setCompletedTime(dateFormat.format(record.getCompletedTime()));
                     }
