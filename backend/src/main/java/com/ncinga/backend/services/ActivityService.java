@@ -114,6 +114,7 @@ public class ActivityService {
                     response.setConfirmUser(record.getConfirmUser());
                     response.setConfirmation(record.isConfirmation());
                     response.setStatus(record.getStatus());
+                    response.setIsActive(activity.getIsActive());
                     if(record.getCompletedTime() != null){
                         response.setCompletedTime(dateFormat.format(record.getCompletedTime()));
                     }
@@ -441,12 +442,12 @@ public class ActivityService {
             // Only send midnight overdue messages between 12:00 AM and 6:59 AM
             if (!overdueActivityNames.isEmpty()) {
                 System.out.println("Sending night WhatsApp message!");
-                whatsAppService.sendMidnightOverdueRecordsMessage(overdueActivityNames);
+                // whatsAppService.sendMidnightOverdueRecordsMessage(overdueActivityNames);
             }
         } else {
             // Outside of midnight window, send unconfirmed messages
             if (!overdueUnconfirmedNames.isEmpty()) {
-                whatsAppService.sendUnconfirmedActivitiesMessage(new ArrayList<>(overdueUnconfirmedNames));
+                //whatsAppService.sendUnconfirmedActivitiesMessage(new ArrayList<>(overdueUnconfirmedNames));
             }
         }
 
@@ -522,29 +523,25 @@ public class ActivityService {
     public ActivityResponseWithCounts getAllByDateAndShiftWithCounts(Date date, String shift) {
         List<ActivityResponse> responses = getActivityResponses(date, shift);
 
-        // Filter out active activities (where isActive is true)
-//        List<ActivityResponse> filteredResponses = responses.stream()
-//                .filter(activityResponse ->
-//                        activityResponse.getIsActive() != null &&
-//                        activityResponse.getIsActive().equalsIgnoreCase("true"))
-//                .collect(Collectors.toList());
-//        System.out.println("FILTERD RECORD : " + filteredResponses);
-
         int totalCount = responses.size();
         int completedCount = (int) responses.stream()
                 .filter(ar -> "completed".equalsIgnoreCase(ar.getStatus()))
                 .count();
         int pendingCount = (int) responses.stream()
-                .filter(ar -> "pending".equalsIgnoreCase(ar.getStatus()))
+                .filter(ar -> "pending".equalsIgnoreCase(ar.getStatus()) && "true".equalsIgnoreCase(ar.getIsActive()))
                 .count();
         int notApplicableCount = (int) responses.stream()
                 .filter(ar -> "not applicable".equalsIgnoreCase(ar.getStatus()))
+                .count();
+        int isActiveCount = (int) responses.stream()
+                .filter(ar -> "true".equalsIgnoreCase(ar.getIsActive()))
                 .count();
 
         System.out.println("TOTAL COUNT : " + totalCount);
         System.out.println("COMPLETED COUNT : " + completedCount);
         System.out.println("PENDING COUNT : " + pendingCount);
         System.out.println("NOT APPLICABLE COUNT : " + notApplicableCount);
+        System.out.println("IS ACTIVE TRUE COUNT : " + isActiveCount);
 
         return new ActivityResponseWithCounts(
                 responses.stream()
@@ -553,7 +550,8 @@ public class ActivityService {
                 totalCount,
                 completedCount,
                 pendingCount,
-                notApplicableCount
+                notApplicableCount,
+                isActiveCount
         );
     }
 
@@ -585,6 +583,7 @@ public class ActivityService {
                     response.setConfirmUser(record.getConfirmUser());
                     response.setConfirmation(record.isConfirmation());
                     response.setStatus(record.getStatus());
+                    response.setIsActive(activity.getIsActive());
                     if (record.getCompletedTime() != null) {
                         response.setCompletedTime(dateFormat.format(record.getCompletedTime()));
                     }

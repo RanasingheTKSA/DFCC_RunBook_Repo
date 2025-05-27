@@ -14,16 +14,6 @@ export const fetchActivitiesInMount = async (details: dateAndShift) => {
         const response = await axios.get(`http://${HOST}:${PORT}/activities/getallbydateandshitf/${date}/${shift}`);
         return response.data
 
-        // return response.data.map((activity: any) => ({
-        //     id: activity.id,
-        //     activity: activity.activity,
-        //     status: activity.status,
-        //     confirmation: activity.confirmation,
-        //     comment: activity.comment,
-        //     date: activity.date,
-        //     shift: activity.shift,
-        //     scheduleTime:  "2025-02-25T08:00:00Z"
-        // }));
     } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
             return error.response;

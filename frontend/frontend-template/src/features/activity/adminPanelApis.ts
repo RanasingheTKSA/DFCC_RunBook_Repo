@@ -88,6 +88,18 @@ export interface ActivityData {
     records?: any[];
 }
 
+// interface createActivityResponse 
+export interface CreateActivityResponse {
+    name: string;
+    scheduleTime: string;
+    shift: string;
+    activityOrder: number;
+    description?: string;
+    isActive: string;
+    records?: any[];
+}
+
+
 export const getActivityById = async (id: string): Promise<ActivityData> => {
     try {
         const response = await axios.get(`http://${HOST}:${PORT}/activities/${id}`);
@@ -99,6 +111,17 @@ export const getActivityById = async (id: string): Promise<ActivityData> => {
 };
 
 export const createActivity = async (activity: ActivityData): Promise<ActivityData> => {
+    try {
+        const response = await axios.post(`http://${HOST}:${PORT}/activities/create`, activity);
+        return response.data;
+    } catch (error) {
+        handleError(error);
+        throw error;
+    }
+};
+
+// This is a new method for creating new activity - 2025-05-26 onwards
+export const createActvityNew = async (activity : CreateActivityResponse): Promise<CreateActivityResponse> => {
     try {
         const response = await axios.post(`http://${HOST}:${PORT}/activities/create`, activity);
         return response.data;

@@ -25,7 +25,7 @@ public class ActivityResponse {
     private String completedTime;
     private Date date;
     private String comment;
-    private boolean isActive;
+    private String isActive;
 
 
 }

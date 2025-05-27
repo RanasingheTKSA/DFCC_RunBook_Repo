@@ -17,10 +17,11 @@ import {
     FaBan,
     FaBullhorn,
     FaTimes,
+    FaPlus,
 } from 'react-icons/fa';
 import "../css/AdminPanel.css";
 import { useState, useEffect } from 'react';
-import { deleteActivity, fetchActivityCounts } from '../features/activity/adminPanelApis';
+import { createActvityNew, deleteActivity, fetchActivityCounts } from '../features/activity/adminPanelApis';
 import { createActivity, updateActivity } from '../features/activity/adminPanelApis';
 import { getAllActivities } from '../features/activity/adminPanelApis';
 
@@ -32,30 +33,96 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
     const [activityCounts, setActivityCounts] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-
-
-
-
-
-    // Filter activities based on selected shift
-    const filteredActivities = activityCounts?.activities?.filter(activity =>
-        activity.shift === shiftFilter
-    ) || [];
-
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [activityToDelete, setActivityToDelete] = useState(null);
 
     // Admin Panel - Activity Controller edit activity form
     const [showEditModal, setShowEditModal] = useState(false);
     const [currentActivity, setCurrentActivity] = useState(null);
-    const [activityForm, setActivityForm] = useState({
-        id: '',
+
+    // State initialization
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newActivity, setNewActivity] = useState({
         name: '',
         scheduleTime: '',
         shift: 'Morning-Weekday-Normal',
-        activityOrder: 1,
+        activityOrder: '',
         description: '',
-        isActive: '',
-        date: ''
+        isActive: 'true'
     });
+
+    const handleAddClick = () => {
+        setShowAddModal(true);
+        setError(null);
+        setNewActivity({
+            name: '',
+            scheduleTime: '',
+            shift: 'Morning-Weekday-Normal',
+            activityOrder: '',
+            description: '',
+            isActive: 'true'
+        });
+    };
+
+    const handleAddSubmit = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            // Validate required fields
+            if (!newActivity.name || !newActivity.scheduleTime || !newActivity.activityOrder) {
+                throw new Error('Please fill all required fields');
+            }
+
+            const payload = {
+                name: newActivity.name,
+                scheduleTime: newActivity.scheduleTime,
+                shift: newActivity.shift,
+                activityOrder: Number(newActivity.activityOrder),
+                isActive: newActivity.isActive,
+                description: newActivity.description || null,
+                success: undefined,
+                time: ''
+            };
+
+            const response = await createActvityNew(payload);
+
+            const data = await fetchActivityCounts({
+                date: new Date(dateFilter),
+                shift: shiftFilter
+            });
+            setActivityCounts(data);
+            setShowAddModal(false);
+
+        } catch (error) {
+            console.error('Create error:', error);
+            setError(error.message || 'Failed to create activity');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filteredActivities = activityCounts?.activities?.filter(activity => {
+        const matchesShift = activity.shift === shiftFilter;
+        const isActive = activity.isActive !== 'false';
+
+        console.log('Activity:', {
+            id: activity.activityId,
+            name: activity.name,
+            shift: activity.shift,
+            isActive: activity.isActive,
+            matchesShift,
+            isActiveFilter: isActive,
+            included: matchesShift && isActive
+        });
+
+        return matchesShift && isActive;
+    }) || [];
+
+    console.log('Final filtered activities:', filteredActivities);
+
+
+
 
 
     const toggleSidebar = () => {
@@ -63,8 +130,6 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
     };
 
     const handleShiftChange = (e) => {
-        // implementing the shift filter change
-        
         setShiftFilter(e.target.value);
     };
 
@@ -105,7 +170,7 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
     // pending activities card display
     const getPendingActivities = () => {
         if (!activityCounts?.activities) return [];
-        return activityCounts.activities.filter(a => a.status == 'Pending');
+        return activityCounts.activities.filter(a => a.status == 'Pending' && a.isActive !== 'false');
     };
 
     // Add this function to render comments in the Special Notice card
@@ -147,7 +212,7 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
 
         return (
             <div className="pending-activities-list">
-                <h5>Pending Activities:</h5>
+                {/* <h5>Pending Activities:</h5> */}
                 <ul>
                     {pendingActivities.slice(0, 5).map((activity, index) => (
                         <li key={index}>
@@ -158,9 +223,6 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
                                         ({activity.scheduleTime})
                                     </span>
                                 )}
-                            </div>
-                            <div className="activity-description">
-                                {activity.description || 'No description available'}
                             </div>
                         </li>
                     ))}
@@ -176,14 +238,35 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
 
 
     const handleEditClick = (activity) => {
-        console.log("Edit clicked - activity:", activity);
-        console.log("Before setShowEditModal - current state:", showEditModal);
-        console.log("Activity ID:", activity.activityId);
-
         setCurrentActivity(activity);
+        setActivityForm({
+            activityId: activity.activityId,
+            name: activity.name,
+            scheduleTime: activity.scheduleTime,
+            shift: activity.shift,
+            activityOrder: activity.activityOrder,
+            description: activity.description || '',
+            isActive: activity.isActive === true || activity.isActive === 'true'
+        });
         setShowEditModal(true);
+    };
 
-        setTimeout(() => console.log("After setShowEditModal - state should be true"), 0);
+    const [activityForm, setActivityForm] = useState({
+        activityId: '',
+        name: '',
+        scheduleTime: '',
+        shift: 'Morning-Weekday-Normal',
+        activityOrder: 1,
+        description: '',
+        isActive: true,
+    });
+
+    const handleInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setActivityForm(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     };
 
     const handleCloseModal = () => {
@@ -191,38 +274,83 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
     };
 
     // Delete activity handle 
-    const handleDeleteClick = async (activity) => {
-        try {
+    // const handleDeleteClick = async (activity) => {
+    //     try {
 
+    //         setLoading(true);
+    //         setError('');
+
+    //         if (!activity?.activityId) {
+    //             throw new Error("Activity ID is not available");
+    //         }
+
+    //         console.log("Deleting activity with ID:", activity.activityId);
+    //         const response = await deleteActivity(activity.activityId);
+    //         console.log("Delete response:", response);
+    //         console.log("Is activity deleted:", response?.isActive);
+
+    //         if (response?.isActive === 'false') {
+    //             console.log("Activity deleted successfully");
+    //             setActivityCounts(prevCounts => ({
+    //                 ...prevCounts,
+    //                 activities: prevCounts.activities.filter(a => a.activityId !== activity.activityId)
+    //             }));
+    //         }
+
+    //         console.log("Filtered activities after deletion:", filteredActivities);
+
+    //     } catch (error) {
+    //         console.error("Deactivation failed:", {
+    //             activityId: activity?.activityId,
+    //             error: error,
+    //             response: error.response?.data
+    //         });
+
+    //         setError(
+    //             error.response?.data?.message ||
+    //             error.message ||
+    //             'Failed to deactivate activity'
+    //         );
+    //     } finally {
+    //         setLoading(false);
+    //     }
+
+    // }
+
+    const handleDeleteClick = (activity) => {
+        setActivityToDelete(activity);
+        setShowDeleteModal(true);
+    };
+
+
+    const confirmDelete = async () => {
+        if (!activityToDelete?.activityId) {
+            setError("Activity ID is not available");
+            setShowDeleteModal(false);
+            return;
+        }
+
+        try {
             setLoading(true);
             setError('');
 
-            if (!activity?.activityId) {
-                throw new Error("Activity ID is not available");
-            }
-
-            console.log("Deleting activity with ID:", activity.activityId);
-            const response = await deleteActivity(activity.activityId);
+            console.log("Deleting activity with ID:", activityToDelete.activityId);
+            const response = await deleteActivity(activityToDelete.activityId);
             console.log("Delete response:", response);
-            console.log("Is activity deleted:", response?.isActive);
-            
+
             if (response?.isActive === 'false') {
                 console.log("Activity deleted successfully");
                 setActivityCounts(prevCounts => ({
                     ...prevCounts,
-                    activities: prevCounts.activities.filter(a => a.activityId !== activity.activityId)
+                    activities: prevCounts.activities.filter(a => a.activityId !== activityToDelete.activityId)
                 }));
             }
-        
-            console.log("Filtered activities after deletion:", filteredActivities);
-            
         } catch (error) {
             console.error("Deactivation failed:", {
-                activityId: activity?.activityId,
+                activityId: activityToDelete?.activityId,
                 error: error,
                 response: error.response?.data
             });
-
             setError(
                 error.response?.data?.message ||
                 error.message ||
@@ -230,9 +358,10 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
             );
         } finally {
             setLoading(false);
+            setShowDeleteModal(false);
+            setActivityToDelete(null);
         }
-
-    }
+    };
 
 
 
@@ -240,7 +369,7 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
     const dashboardStats = [
         {
             title: "Activity Total Count",
-            value: activityCounts?.totalCount ?? "--",
+            value: activityCounts?.isActiveCount ?? "--",
             icon: <FaClipboardList className="stat-icon" />,
             change: "All activities"
         },
@@ -248,19 +377,19 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
             title: "Completed Activity Count",
             value: activityCounts?.completedCount ?? "--",
             icon: <FaCheckCircle className="stat-icon" />,
-            change: `${activityCounts ? Math.round((activityCounts.completedCount / activityCounts.totalCount) * 100) : 0}% completion rate`
+            change: `${activityCounts ? Math.round((activityCounts.completedCount / activityCounts.isActiveCount) * 100) : 0}% completion rate`
         },
         {
             title: "Pending Activity Count",
             value: activityCounts?.pendingCount ?? "--",
             icon: <FaHourglassHalf className="stat-icon" />,
-            change: `${activityCounts ? Math.round((activityCounts.pendingCount / activityCounts.totalCount) * 100) : 0}% pending`
+            change: `${activityCounts ? Math.round((activityCounts.pendingCount / activityCounts.isActiveCount) * 100) : 0}% pending`
         },
         {
             title: "Not-Applicable Activity Count",
             value: activityCounts?.notApplicableCount ?? "--",
             icon: <FaBan className="stat-icon" />,
-            change: `${activityCounts ? Math.round((activityCounts.notApplicableCount / activityCounts.totalCount) * 100) : 0}% not applicable`
+            change: `${activityCounts ? Math.round((activityCounts.notApplicableCount / activityCounts.isActiveCount) * 100) : 0}% not applicable`
         },
         {
             title: "Pending Activities",
@@ -440,6 +569,20 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
                                                         ))}
                                                     </select>
                                                 </div>
+
+                                            </div>
+
+                                            <div>
+                                                {/* Add New Activity Button */}
+                                                <button
+                                                    className="add-activity-btn"
+                                                    onClick={handleAddClick}
+                                                >
+                                                    <FaPlus className="icon" />
+                                                    Add New Activity
+                                                </button>
+                                                <br /><br />
+
                                             </div>
 
                                             {/* Activity List and Management */}
@@ -449,12 +592,10 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
                                                     <table className="activity-table">
                                                         <thead>
                                                             <tr>
-                                                                <th>Object ID</th>
                                                                 <th>Order</th>
                                                                 <th>Activity Name</th>
                                                                 <th>Scheduled Time</th>
                                                                 <th>Is Active</th>
-                                                                {/* <th>Status</th>  */}
                                                                 <th>Actions</th>
                                                             </tr>
                                                         </thead>
@@ -467,42 +608,48 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
                                                                 </tr>
                                                             ) : filteredActivities?.length > 0 ? (
                                                                 filteredActivities
-                                                                
-                                                                .map((activity) => (
-                                                                    <tr key={activity.id}>
-                                                                        <td>{activity.activityId}</td>
-                                                                        <td>{activity.activityOrder}</td>
-                                                                        <td>{activity.name}</td>
-                                                                        <td>{activity.scheduleTime}</td>
-                                                                        <td>{activity.isActive}</td>
-                                                                        {/* <td>
-                                                                            <span className={`status-badge ${activity.isActive ? 'inactive' : 'active'}`}>
-                                                                                {activity.isActive ? 'Inactive' : 'Active'}
-                                                                            </span>
-                                                                        </td> */}
 
-                                                                        {/* Action Buttons */}
-                                                                        <td className="action-buttons">
+                                                                    .map((activity) => (
+                                                                        <tr key={activity.id}>
+                                                                            <td>{activity.activityOrder}</td>
+                                                                            <td>{activity.name}</td>
+                                                                            <td>{activity.scheduleTime}</td>
 
-                                                                            <button
-                                                                                className="edit-btn"
-                                                                                onClick={() => handleEditClick(activity)}
-                                                                            >
-                                                                                Edit
-                                                                            </button>
+                                                                            <td>
+                                                                                <span className={`status-badge ${activity.isActive ? 'active' : 'inactive'}`}>
+                                                                                    {activity.isActive ? 'Active' : 'Inactive'}
+                                                                                </span>
+                                                                            </td>
 
-                                                                            <button
-                                                                                className="delete-btn"
-                                                                                onClick={() => handleDeleteClick(activity)}
-                                                                            >
-                                                                                {activity.isActive ? 'Activate' : 'Delete'}
-                                                                            </button>
+                                                                            {/* Action Buttons */}
+                                                                            <td className="action-buttons">
+
+                                                                                <button
+                                                                                    className="edit-btn"
+                                                                                    onClick={() => handleEditClick(activity)}
+                                                                                >
+                                                                                    Edit
+                                                                                </button>
+
+                                                                                {/* <button
+                                                                                    className="delete-btn"
+                                                                                    onClick={() => handleDeleteClick(activity)}
+                                                                                >
+                                                                                    {activity.isActive ? 'Delete' : 'Activate'}
+                                                                                </button> */}
+
+                                                                                <button
+                                                                                    className="delete-btn"
+                                                                                    onClick={() => handleDeleteClick(activity)}
+                                                                                >
+                                                                                    {activity.isActive ? 'Delete' : 'Activate'}
+                                                                                </button>
 
 
-                                                                        </td>
+                                                                            </td>
 
-                                                                    </tr>
-                                                                ))
+                                                                        </tr>
+                                                                    ))
                                                             ) : (
                                                                 <tr>
                                                                     <td colSpan={5} className="no-activities">
@@ -518,7 +665,7 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
                                     )}
 
                                     {/* User Guide */}
-                                    { }
+                                    {}
 
                                     {/* Reporting */}
                                     { }
@@ -526,7 +673,7 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
 
                                     {/* rest of the other tabs */}
                                     {activeTab !== 'Admin Home' && activeTab !== 'Activity Controller' && (
-                                        <p>Select a section from the sidebar to begin.</p>
+                                        <p>"Thank you for your interest!"  <br /> "This section is still under development. Please check back soon or explore other available features."</p>
                                     )}
                                 </div>
                             )}
@@ -535,13 +682,117 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
                 </div>
             </div>
 
+            {/* ADD ACTIVITY FORM */}
+            {showAddModal && (
+                <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h4>Create New Activity</h4>
+                            <button className="close-btn" onClick={() => setShowAddModal(false)}>
+                                <FaTimes />
+                            </button>
+                        </div>
 
-            {/* EDIT WINDOW */}
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label>Activity Name</label>
+                                <input
+                                    type="text"
+                                    value={newActivity.name}
+                                    onChange={(e) => setNewActivity({ ...newActivity, name: e.target.value })}
+                                    placeholder="Enter activity name"
+                                />
+                            </div>
+
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Scheduled Time (HH.MM)</label>
+                                    <input
+                                        type="text"
+                                        value={newActivity.scheduleTime}
+                                        onChange={(e) => setNewActivity({ ...newActivity, scheduleTime: e.target.value })}
+                                        placeholder="15.00"
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Order</label>
+                                    <input
+                                        type="number"
+                                        value={newActivity.activityOrder}
+                                        onChange={(e) => setNewActivity({ ...newActivity, activityOrder: e.target.value })}
+                                        placeholder="26"
+                                        min="1"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Shift</label>
+                                <select
+                                    value={newActivity.shift}
+                                    onChange={(e) => setNewActivity({ ...newActivity, shift: e.target.value })}
+                                >
+                                    <option value="Morning-Weekday-Normal">WeekDay - Morning</option>
+                                    <option value="Mid-Weekday-Normal">WeekDay - Mid</option>
+                                    <option value="Night-Weekday-Normal">WeekDay - Night</option>
+                                    <option value="Morning-Weekday-Holiday">WeekEnd/Holiday - Morning</option>
+                                    <option value="Night-Weekday-Holiday">WeekEnd/Holiday - Night</option>
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Description (Optional)</label>
+                                <textarea
+                                    value={newActivity.description}
+                                    onChange={(e) => setNewActivity({ ...newActivity, description: e.target.value })}
+                                    placeholder="Add any additional notes"
+                                    rows={2}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="notes-section">
+                            <h5 className='additional-note'>Additional Notes</h5>
+                            <p className="notes-text">
+                                The only changes that can be made are to the Order, Name, Shift, and Scheduled Time. (Description is optional)
+                                Changes to the "Order" field, which mess with the existing order of activities, will not affect the order of other activities automatically.
+                                Make sure the order field is filled out very carefully.
+                                <br /><br />
+                                NOTE: Schedule Time should be in <strong>24-hour format (HH:MM)</strong>.
+                            </p>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button className="modal-btn secondary" onClick={() => setShowAddModal(false)}>
+                                Cancel
+                            </button>
+                            <button
+                                className="modal-btn primary"
+                                onClick={handleAddSubmit}
+                                disabled={loading || !newActivity.name || !newActivity.scheduleTime || !newActivity.activityOrder}
+                            >
+                                {loading ? (
+                                    <>
+                                        <span className="loading-spinner" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    'Create Activity'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+            {/* EDIT ACTIVITY FORM */}
             {showEditModal && currentActivity && (
                 <div className="modal-overlay" onClick={handleCloseModal}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>Edit Activity Details</h2>
+                            <h4>Editable Activity Informations</h4>
                             <button className="close-btn" onClick={handleCloseModal}>
                                 <FaTimes />
                             </button>
@@ -550,46 +801,87 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
                         <div className="modal-body">
                             <div className="activity-details">
                                 <div className="detail-section">
-                                    <h4>Activity Information</h4>
+                                    {/* <h4>Activity Information</h4> */}
                                     <div className="detail-grid">
+                                        {/* Editable Order field */}
                                         <div className="detail-item">
-                                            <span className="detail-label">Order:</span>
-                                            <span className="detail-value">{currentActivity.activityOrder}</span>
+                                            <label className="detail-label">Order:</label>
+                                            <input
+                                                type="number"
+                                                name="activityOrder"
+                                                value={activityForm.activityOrder}
+                                                onChange={handleInputChange}
+                                                className="detail-input"
+                                                min="1"
+                                            />
                                         </div>
+
+                                        {/* Editable Name field */}
                                         <div className="detail-item">
-                                            <span className="detail-label">Name:</span>
-                                            <span className="detail-value">{currentActivity.name}</span>
+                                            <label className="detail-label">Name:</label>
+                                            <input
+                                                type="text"
+                                                name="name"
+                                                value={activityForm.name}
+                                                onChange={handleInputChange}
+                                                className="detail-input"
+                                            />
                                         </div>
+
+                                        {/* Editable Shift field */}
                                         <div className="detail-item">
-                                            <span className="detail-label">Shift:</span>
-                                            <span className="detail-value">{currentActivity.shift}</span>
+                                            <label className="detail-label">Shift:</label>
+                                            <select
+                                                name="shift"
+                                                value={activityForm.shift}
+                                                onChange={handleInputChange}
+                                                className="detail-input"
+                                            >
+                                                {shiftOptions.map((option, index) => (
+                                                    <option key={index} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </div>
+
+                                        {/* Editable Scheduled Time field */}
                                         <div className="detail-item">
-                                            <span className="detail-label">Scheduled Time:</span>
-                                            <span className="detail-value">{currentActivity.scheduleTime}</span>
+                                            <label className="detail-label">Scheduled Time:</label>
+                                            <input
+                                                type="text"
+                                                name="scheduleTime"
+                                                value={activityForm.scheduleTime}
+                                                onChange={handleInputChange}
+                                                className="detail-input"
+                                                placeholder="HH:MM"
+                                            />
                                         </div>
+
+                                        {/* Read-only fields */}
                                         <div className="detail-item">
                                             <span className="detail-label">Created Time:</span>
                                             <span className="detail-value">{currentActivity.time}</span>
                                         </div>
-                                        {/* <div className="detail-item">
-                                            <span className="detail-label">Status:</span>
-                                            <span className={`status-badge ${currentActivity.isActive ? 'inactive' : 'active'}`}>
-                                                {currentActivity.isActive ? 'Inactive' : 'Active'}
+                                        <div className="detail-item">
+                                            <span className="detail-label">Is Active:</span>
+                                            <span className={`status-badge ${currentActivity.isActive ? 'active' : 'inactive'}`}>
+                                                {currentActivity.isActive ? 'Active' : 'Inactive'}
                                             </span>
-                                        </div> */}
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div className="divider"></div>
 
                                 <div className="notes-section">
-                                    <h4>Additional Notes</h4>
+                                    <h5 className='additional-note'>Additional Notes</h5>
                                     <p className="notes-text">
-                                        Activity details are displayed for review and editing.
-                                        Make necessary changes and save to update the record.
-                                        <br /> <br />
-                                        NOTE : Schedule Time is in 24 hours format.
+                                        The only changes that can be made are to the Order, the Name, the Shift, and the Scheduled Time.
+                                        Changes to the "Order" field, which mess with the existing order of activities, will not affect the order of other activities automatically.
+                                        Make sure the order field is filled out very carefully.
+                                        <br /><br />
+                                        NOTE: Schedule Time should be in <strong>24-hour format (HH:MM)</strong>.
                                     </p>
                                 </div>
                             </div>
@@ -597,15 +889,104 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
 
                         <div className="modal-footer">
                             <button className="modal-btn secondary" onClick={handleCloseModal}>
-                                Close
+                                Cancel
                             </button>
-                            <button className="modal-btn primary">
-                                Save Changes
+
+                            <button
+                                className="modal-btn primary"
+                                onClick={async () => {
+                                    try {
+                                        setLoading(true);
+                                        const response = await updateActivity(
+                                            activityForm.activityId,
+                                            {
+                                                name: activityForm.name,
+                                                shift: activityForm.shift,
+                                                scheduleTime: activityForm.scheduleTime,
+                                                success: undefined,
+                                                id: activityForm.activityId,
+                                                time: new Date().toISOString(),
+                                                description: '',
+                                                activityOrder: activityForm.activityOrder,
+                                                isActive: ''
+                                            }
+                                        );
+
+                                        console.log('Update response:', response);
+
+                                        setShowEditModal(false);
+
+                                        const data = await fetchActivityCounts({
+                                            date: new Date(dateFilter),
+                                            shift: shiftFilter
+                                        });
+                                        setActivityCounts(data);
+
+                                    } catch (error) {
+                                        console.error('Update error:', error);
+                                        setError(error.message || 'Failed to update activity');
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                                disabled={loading}
+                            >
+                                {loading ?
+                                    (
+                                        <>
+                                            <span className="loading-spinner"></span>
+                                            Saving...
+                                        </>) : ('Save Changes')}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
+
+            {/* DELETING CONFIRMATION */}
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && activityToDelete && (
+                <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+                    <div className="modal-content confirm-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h4>Confirm Deletion</h4>
+                            <button className="close-btn" onClick={() => setShowDeleteModal(false)}>
+                                <FaTimes />
+                            </button>
+                        </div>
+
+                        <div className="modal-body">
+                            <p>Please confirm that you want to delete the activity: <br /> <strong>{activityToDelete.name}</strong></p>
+                            <p>This action cannot be undone.</p>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button
+                                className="modal-btn secondary"
+                                onClick={() => setShowDeleteModal(false)}
+                                disabled={loading}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="modal-btn danger"
+                                onClick={confirmDelete}
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <>
+                                        <span className="loading-spinner" />
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    'Confirm Delete'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
 
         </div >
     );
