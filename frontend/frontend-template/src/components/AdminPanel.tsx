@@ -665,7 +665,7 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
                                     )}
 
                                     {/* User Guide */}
-                                    { }
+                                    {}
 
                                     {/* Reporting */}
                                     { }
@@ -673,7 +673,7 @@ export default function AdminPanel({ title, children, topMargin, TopSideButtons 
 
                                     {/* rest of the other tabs */}
                                     {activeTab !== 'Admin Home' && activeTab !== 'Activity Controller' && (
-                                        <p>Select a section from the sidebar to begin.</p>
+                                        <p>"Thank you for your interest!"  <br /> "This section is still under development. Please check back soon or explore other available features."</p>
                                     )}
                                 </div>
                             )}
